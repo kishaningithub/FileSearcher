@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import java.lang.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.layout.AnchorPane?>
+
+<AnchorPane prefHeight="508.0" prefWidth="492.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.kishan.FileSearcher.ux.desktop.MasterSceneController">
+   <children>
+      <VBox alignment="CENTER" prefHeight="508.0" prefWidth="492.0" spacing="10.0">
+         <children>
+            <HBox prefHeight="30.0" prefWidth="366.0" spacing="5.0">
+               <children>
+                  <TextField fx:id="directoryTF" prefHeight="26.0" prefWidth="372.0" promptText="Search Directory" />
+                  <Button mnemonicParsing="false" onAction="#onClickSelectDirectory" text="Select Directory" />
+               </children>
+            </HBox>
+            <TextField fx:id="searchTF" prefHeight="26.0" prefWidth="461.0" promptText="Search Text">
+               <VBox.margin>
+                  <Insets />
+               </VBox.margin>
+            </TextField>
+            <Button fx:id="searchBtn" mnemonicParsing="false" onAction="#onSearchBtnClick" text="Search" />
+            <Label fx:id="searchStatusLbl" alignment="CENTER" prefHeight="16.0" prefWidth="268.0" textAlignment="CENTER" />
+            <ListView fx:id="searchResultsLstVw" prefHeight="345.0" prefWidth="492.0" />
+         </children>
+      </VBox>
+   </children>
+</AnchorPane>

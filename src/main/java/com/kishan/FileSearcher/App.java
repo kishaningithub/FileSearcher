@@ -1,4 +1,4 @@
-package com.kishan.FileSearcher.business;
+package com.kishan.FileSearcher;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -15,12 +15,18 @@ public class App
 {
 
 	/** The start directory. */
-	private File startDirectory;
+	private final File startDirectory;
 
 	/** The search txt. */
-	private String searchTxt;
+	private final String searchTxt;
 	
-	private final long maxFileSizeInBytes = 50 * 1024 * 1024; // 50 MB
+	/** The max file size in bytes. */
+	private final long maxFileSizeInBytes;
+	
+	/** The status txt. */
+	private static String statusTxt;
+	
+	private boolean searchCompleted;
 
 	/**
 	 * Instantiates a new file search.
@@ -28,10 +34,26 @@ public class App
 	 * @param startDirectory the start directory
 	 * @param searchTxt the search txt
 	 */
-	public App(File startDirectory, String searchTxt) 
+	public App(File startDirectory, String searchTxt, long maxFileSizeInBytes) 
 	{
 		this.startDirectory = startDirectory;
 		this.searchTxt = searchTxt.toLowerCase();
+		this.maxFileSizeInBytes = maxFileSizeInBytes;
+	}
+	
+	public String getSearchTxt() 
+	{
+		return searchTxt;
+	}
+	
+	private void setSearchTxt(String statusTxt) 
+	{
+		App.statusTxt= statusTxt;
+	}
+
+	public boolean isSearchCompleted()
+	{
+		return searchCompleted;
 	}
 
 	/**
@@ -45,9 +67,8 @@ public class App
 		if(args.length == 2){
 			File startDirectory = new File(args[0]);
 			String searchTxt = args[1];
-			App fileSearch = new App(startDirectory, searchTxt);
+			App fileSearch = new App(startDirectory, searchTxt, 1 * 1024 * 1024 /* 1MB */);
 			List<String> resultLst = fileSearch.search();
-			System.out.println(resultLst);
 			Files.write(new File("Findings.txt").toPath(), resultLst);
 		}
 	}
@@ -55,7 +76,7 @@ public class App
 	/**
 	 * Search.
 	 *
-	 * @throws Exception the exception
+	 * @return the list
 	 */
 	public List<String> search()
 	{	
@@ -65,7 +86,7 @@ public class App
 				if(file.isFile()){
 					returnLst.addAll(fileSearch(file));
 				}else if(file.isDirectory()){
-					App fileSearch = new App(file, searchTxt);
+					App fileSearch = new App(file, searchTxt, maxFileSizeInBytes);
 					returnLst.addAll(fileSearch.search());
 				}
 			}	
@@ -79,6 +100,7 @@ public class App
 	 * File search.
 	 *
 	 * @param file the file
+	 * @return the list
 	 */
 	private List<String> fileSearch(File file)
 	{

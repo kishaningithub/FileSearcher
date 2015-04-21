@@ -1,13 +1,9 @@
 package com.kishan.FileSearcher.ux.desktop;
 
-import java.awt.Desktop;
 import java.io.File;
-import java.io.IOException;
-import java.util.List;
 
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.concurrent.Service;
 import javafx.concurrent.Task;
 import javafx.concurrent.WorkerStateEvent;
@@ -21,8 +17,8 @@ import javafx.scene.control.TextField;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 
-import com.kishan.FileSearcher.AppBusiness;
-import com.kishan.FileSearcher.dto.SearchResultDTO;
+import com.kishan.FileSearcher.DataSizeUnit;
+import com.kishan.FileSearcher.FileSearchTask;
 
 /**
  * The Class MasterSceneController.
@@ -102,38 +98,14 @@ public class MasterSceneController
 		final File startDirectory = new File(directoryTF.getText().trim());
 		final String searchTxt = searchTF.getText().trim();
 
-		if(!startDirectory.exists()){
-			searchStatusLbl.setText("Invalid directory.");
-			return;
-		}
-
+		final ObservableList<String> observableResultList = FXCollections.observableArrayList();
+		searchResultsLstVw.setItems(observableResultList);
 		searchBtn.setDisable(true);
+		
 		service = new Service<Void>() {
 			@Override
 			protected Task<Void> createTask() {
-				return new Task<Void>() {
-					@Override
-					protected Void call() throws Exception {
-						AppBusiness fileSearch = new AppBusiness(startDirectory, searchTxt, 1 * 1024 * 1024 /* 1MB */);
-						// Get user input - End
-						updateMessage("Searching please wait...");
-						List<SearchResultDTO> resultLst = fileSearch.search();
-						updateMessage("Search performed sucessfully.");
-						searchResultsLstVw.setItems(FXCollections.observableArrayList(fileSearch.getSearchResultsAsStringLst(resultLst)));
-						searchResultsLstVw.getSelectionModel().selectedItemProperty().addListener(
-								new ChangeListener<String>() {
-									public void changed(ObservableValue<? extends String> ov, String old_val, String new_val) {
-										try {
-											Desktop.getDesktop().open(new File(new_val));
-										} catch (IOException e) {
-											e.printStackTrace();
-										}
-									}
-								});
-						return null;
-					}
-
-				};
+				return new FileSearchTask(startDirectory.toPath(), searchTxt, 1, DataSizeUnit.MB, observableResultList);
 			}
 		};
 		service.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
@@ -147,13 +119,10 @@ public class MasterSceneController
 			@Override
 			public void handle(WorkerStateEvent event) {
 				System.out.print(event);
-
 			}
-
 		});
+		
 		searchStatusLbl.textProperty().bind(service.messageProperty());
 		service.restart();
 	}
-
-
 }

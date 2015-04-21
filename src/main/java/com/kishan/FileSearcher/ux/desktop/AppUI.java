@@ -26,6 +26,7 @@ public class AppUI extends Application
 			Scene scene = new Scene(parent);
 			scene.getStylesheets().add(getClass().getResource("/view/css/application.css").toExternalForm());
 		
+			primaryStage.setTitle("File Searcher");
 			primaryStage.setScene(scene);
 			primaryStage.show();
 		} catch(Exception e) {

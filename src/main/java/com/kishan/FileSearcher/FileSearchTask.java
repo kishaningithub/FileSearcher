@@ -58,6 +58,7 @@ public class FileSearchTask extends Task<Void>
 		updateMessage("Searching...");
 		if(!startDirectory.toFile().exists()){
 			updateMessage("Invalid directory.");
+			return null;
 		}
 		if(!searchTxt.isEmpty()){
 			Files.walkFileTree(startDirectory, new FileSearchFileVisitor());

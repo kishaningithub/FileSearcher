@@ -91,6 +91,7 @@ public class FileSearchTask extends Task<Void>
 									observableResultList.add(path.toString());									
 								}
 							});
+							break;
 						}
 					}	
 				} catch (IOException e) {

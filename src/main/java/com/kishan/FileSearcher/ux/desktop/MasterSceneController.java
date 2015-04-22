@@ -13,6 +13,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
+import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TextField;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
@@ -101,7 +102,7 @@ public class MasterSceneController
 		final ObservableList<String> observableResultList = FXCollections.observableArrayList();
 		searchResultsLstVw.setItems(observableResultList);
 		searchBtn.setDisable(true);
-		
+		searchResultsLstVw.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
 		service = new Service<Void>() {
 			@Override
 			protected Task<Void> createTask() {

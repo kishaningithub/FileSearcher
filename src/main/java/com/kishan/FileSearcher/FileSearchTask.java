@@ -77,7 +77,7 @@ public class FileSearchTask extends Task<Void>
 		 * @see java.nio.file.SimpleFileVisitor#visitFile(java.lang.Object, java.nio.file.attribute.BasicFileAttributes)
 		 */
 		@Override
-		public FileVisitResult visitFile(Path path, BasicFileAttributes attrs) throws IOException 
+		public FileVisitResult visitFile(final Path path, BasicFileAttributes attrs) throws IOException 
 		{
 			if(attrs.size() <= maxFileSizeInBytes){
 				updateMessage("Searching file " + path.toString());

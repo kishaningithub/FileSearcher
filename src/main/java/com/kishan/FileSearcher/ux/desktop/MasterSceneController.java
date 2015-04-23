@@ -15,6 +15,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TextField;
+import javafx.scene.control.ToggleButton;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 
@@ -46,6 +47,12 @@ public class MasterSceneController
 	/** The search btn. */
 	@FXML
 	private Button searchBtn;
+	
+	@FXML
+	private Button stopBtn;
+	
+	@FXML
+	private ToggleButton pauseBtn;
 
 	/** The service. */
 	private Service<Void> service;
@@ -101,7 +108,9 @@ public class MasterSceneController
 
 		final ObservableList<String> observableResultList = FXCollections.observableArrayList();
 		searchResultsLstVw.setItems(observableResultList);
-		searchBtn.setDisable(true);
+		searchBtn.setVisible(false);
+		stopBtn.setVisible(true);
+		pauseBtn.setVisible(true);
 		searchResultsLstVw.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
 		service = new Service<Void>() {
 			@Override
@@ -113,7 +122,9 @@ public class MasterSceneController
 			@Override
 			public void handle(WorkerStateEvent event) {
 				searchStatusLbl.textProperty().unbind();
-				searchBtn.setDisable(false);
+				searchBtn.setVisible(true);
+				stopBtn.setVisible(false);
+				pauseBtn.setVisible(false);
 			}
 		});
 		service.setOnFailed(new EventHandler<WorkerStateEvent>() {

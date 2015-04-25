@@ -1,6 +1,10 @@
 package com.kishan.FileSearcher.ux.desktop;
 
+import com.kishan.FileSearcher.DataSizeUnit;
+
 import javafx.application.Application;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -22,6 +26,12 @@ public class AppUI extends Application
 			Parent parent = (Parent) fxmlLoader.load();
 			MasterSceneController masterSceneController = fxmlLoader.getController();
 			masterSceneController.setPrimaryStage(primaryStage);
+			ObservableList<String> dataUnitLst = FXCollections.observableArrayList();
+			for(DataSizeUnit dataSizeUnit:DataSizeUnit.values()){
+				dataUnitLst.add(dataSizeUnit.toString());
+			}
+			masterSceneController.dataUnitCbo.setItems(dataUnitLst);
+			masterSceneController.dataUnitCbo.setValue(DataSizeUnit.MB.toString());
 			
 			Scene scene = new Scene(parent);
 			scene.getStylesheets().add(getClass().getResource("/view/css/application.css").toExternalForm());

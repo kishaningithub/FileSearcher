@@ -11,6 +11,8 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.SelectionMode;
@@ -21,6 +23,7 @@ import javafx.stage.Stage;
 
 import com.kishan.FileSearcher.DataSizeUnit;
 import com.kishan.FileSearcher.FileSearchTask;
+import com.kishan.FileSearcher.dto.SearchInputDTO;
 
 /**
  * The Class MasterSceneController.
@@ -53,6 +56,15 @@ public class MasterSceneController
 	
 	@FXML
 	private ToggleButton pauseBtn;
+	
+	@FXML
+	private CheckBox isRegExChkBox;
+	
+	@FXML
+	public ChoiceBox<String> dataUnitCbo;
+	
+	@FXML
+	private TextField maxFileSizeTxt;
 
 	/** The service. */
 	private Service<Void> service;
@@ -108,23 +120,32 @@ public class MasterSceneController
 
 		final ObservableList<String> observableResultList = FXCollections.observableArrayList();
 		searchResultsLstVw.setItems(observableResultList);
-		searchBtn.setVisible(false);
-		stopBtn.setVisible(true);
-		pauseBtn.setVisible(true);
+		searchBtn.setDisable(true);
+		stopBtn.setDisable(false);
+		pauseBtn.setDisable(false);
 		searchResultsLstVw.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
 		service = new Service<Void>() {
 			@Override
 			protected Task<Void> createTask() {
-				return new FileSearchTask(startDirectory.toPath(), searchTxt, 1, DataSizeUnit.MB, observableResultList);
+				SearchInputDTO searchInputDTO = new SearchInputDTO();
+				searchInputDTO.setStartDirectory(startDirectory.toPath());
+				searchInputDTO.setSearchTxt(searchTxt);
+				String maxFileSize = maxFileSizeTxt.getText().trim();
+				searchInputDTO.setAnySize(maxFileSize.isEmpty());
+				if(!searchInputDTO.isAnySize()){
+					searchInputDTO.setMaxFileSizeInBytes(Long.parseLong(maxFileSize), DataSizeUnit.valueOf(dataUnitCbo.getValue()));
+				}
+				searchInputDTO.setRegEx(isRegExChkBox.selectedProperty().get());
+				return new FileSearchTask(searchInputDTO, observableResultList);
 			}
 		};
 		service.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
 			@Override
 			public void handle(WorkerStateEvent event) {
 				searchStatusLbl.textProperty().unbind();
-				searchBtn.setVisible(true);
-				stopBtn.setVisible(false);
-				pauseBtn.setVisible(false);
+				searchBtn.setDisable(false);
+				stopBtn.setDisable(true);
+				pauseBtn.setDisable(true);
 			}
 		});
 		service.setOnFailed(new EventHandler<WorkerStateEvent>() {

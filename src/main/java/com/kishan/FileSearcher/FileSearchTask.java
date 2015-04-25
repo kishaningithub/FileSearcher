@@ -70,6 +70,7 @@ public class FileSearchTask extends Task<Void>
 	@Override
 	protected Void call() throws Exception 
 	{
+		long fromTime = System.currentTimeMillis();
 		if(!searchInputDTO.getStartDirectory().toFile().exists()){
 			updateMessage("Invalid directory.");
 			return null;
@@ -84,7 +85,9 @@ public class FileSearchTask extends Task<Void>
 				}
 			}
 		}
-		updateMessage("Search completed.");
+		long toTime = System.currentTimeMillis();
+		double timeTakenInSecs = (toTime - fromTime) / 1000d;
+		updateMessage("Search completed. Time taken " + timeTakenInSecs + " seconds.");
 		return null;
 	}
 

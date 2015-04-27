@@ -9,17 +9,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 
-import com.kishan.FileSearcher.dto.FutureHolderDTO;
 import com.kishan.FileSearcher.dto.SearchInputDTO;
 
 /**
@@ -36,11 +30,6 @@ public class FileSearchTask extends Task<Void>
 
 	/** The threshold size. */
 	private final long thresholdSize = DataSizeUnit.MB.toBytes(10);
-
-	/** The es. */
-	private final ExecutorService es = Executors.newFixedThreadPool(5);
-
-	private final List<FutureHolderDTO> futureHolderDTOLst = new ArrayList<FutureHolderDTO>();
 
 	private final IPatternSearcher iPatternSearcher;
 
@@ -75,13 +64,6 @@ public class FileSearchTask extends Task<Void>
 		}
 		if(!searchInputDTO.getSearchTxt().isEmpty()){
 			Files.walkFileTree(searchInputDTO.getStartDirectory(), new FileSearchFileVisitor());
-			for(FutureHolderDTO futureHolderDTO:futureHolderDTOLst){
-				Future<?> future = futureHolderDTO.getFuture();
-				if(!future.isDone()){
-					updateMessage("Searching " + futureHolderDTO.getFilePath());
-					future.get();
-				}
-			}
 		}
 		long toTime = System.currentTimeMillis();
 		double timeTakenInSecs = (toTime - fromTime) / 1000d;
@@ -112,22 +94,11 @@ public class FileSearchTask extends Task<Void>
 		try {
 			updateMessage("Searching "+ path);
 			String fileContent = new String(Files.readAllBytes(path));
-			updateUIIfSearchStrPresent(path, fileContent);
+			if(isSearchStrPresent(fileContent)){
+				updateUI(path);
+			}
 		} catch (IOException e) {
 			e.printStackTrace();
-		}
-	}
-
-	/**
-	 * Update ui if search str present.
-	 *
-	 * @param path the path
-	 * @param fileContent the file content
-	 */
-	private void updateUIIfSearchStrPresent(final Path path, final String fileContent)
-	{
-		if(isSearchStrPresent(fileContent)){
-			updateUI(path);
 		}
 	}
 
@@ -162,7 +133,10 @@ public class FileSearchTask extends Task<Void>
 			String prependStr = "";
 			while ((bytesCount = in.read(bytebuf)) > 0) {
 				String pageStr = prependStr + new String(byteArr, 0, bytesCount);
-				updateUIIfSearchStrPresent(path, pageStr);
+				if(isSearchStrPresent(pageStr)){
+					updateUI(path);
+					break;
+				}
 				// Check and handle 'cut' lines - Start
 				int i = pageStr.length() - 1;
 				int newLinePos = i; 
@@ -186,7 +160,6 @@ public class FileSearchTask extends Task<Void>
 		}
 	}
 
-
 	/**
 	 * The Class FileSearchFileVisitor.
 	 */
@@ -204,17 +177,7 @@ public class FileSearchTask extends Task<Void>
 				if(fileSize <= thresholdSize){
 					searchSmallFile(path);
 				}else{
-					Future<?> future = es.submit(new Runnable() {
-						@Override
-						public void run()
-						{
-							searchLargeFile(path);
-						}
-					});
-					FutureHolderDTO futureHolderDTO = new FutureHolderDTO();
-					futureHolderDTO.setFilePath(path);
-					futureHolderDTO.setFuture(future);
-					futureHolderDTOLst.add(futureHolderDTO);
+					searchLargeFile(path);
 				}
 			}
 			return super.visitFile(path, attrs);

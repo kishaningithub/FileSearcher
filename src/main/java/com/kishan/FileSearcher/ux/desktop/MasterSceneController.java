@@ -1,6 +1,9 @@
 package com.kishan.FileSearcher.ux.desktop;
 
+import java.awt.Desktop;
 import java.io.File;
+import java.io.IOException;
+import java.util.List;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -8,6 +11,7 @@ import javafx.concurrent.Service;
 import javafx.concurrent.Task;
 import javafx.concurrent.WorkerStateEvent;
 import javafx.event.ActionEvent;
+import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -18,6 +22,8 @@ import javafx.scene.control.ListView;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleButton;
+import javafx.scene.input.Clipboard;
+import javafx.scene.input.ClipboardContent;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 
@@ -47,22 +53,23 @@ public class MasterSceneController
 	@FXML
 	private ListView<String> searchResultsLstVw;
 
-	/** The search btn. */
-	@FXML
-	private Button searchBtn;
-	
+	/** The stop btn. */
 	@FXML
 	private Button stopBtn;
 	
+	/** The pause btn. */
 	@FXML
 	private ToggleButton pauseBtn;
 	
+	/** The is reg ex chk box. */
 	@FXML
 	private CheckBox isRegExChkBox;
 	
+	/** The data unit cbo. */
 	@FXML
 	public ChoiceBox<String> dataUnitCbo;
 	
+	/** The max file size txt. */
 	@FXML
 	private TextField maxFileSizeTxt;
 
@@ -107,20 +114,70 @@ public class MasterSceneController
 			directoryTF.setText(selectedDirectory.getAbsolutePath());
 		}
 	}
+	
+	/**
+	 * On open path.
+	 *
+	 * @param event the event
+	 */
+	public void onOpenPath(ActionEvent event)
+	{
+		if(Desktop.isDesktopSupported()){
+			Desktop deskTop = Desktop.getDesktop();
+			for(String value:searchResultsLstVw.getSelectionModel().getSelectedItems()){
+				try {
+					deskTop.open(new File(value));
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+	}
+	
+	/**
+	 * On copy file path.
+	 *
+	 * @param event the event
+	 */
+	public void onCopyFilePath(ActionEvent event)
+	{
+		List<String> fileLst = searchResultsLstVw.getSelectionModel().getSelectedItems();
+		if(!fileLst.isEmpty()){
+			Clipboard clipBoard = Clipboard.getSystemClipboard();
+			ClipboardContent clipboardContent = new ClipboardContent();
+			clipboardContent.putString(String.join("\n", fileLst));
+			clipBoard.setContent(clipboardContent);
+		}
+	}
+	
+	/**
+	 * On copy files.
+	 *
+	 * @param event the event
+	 */
+	public void onCopyFiles(ActionEvent event)
+	{
+		List<String> fileLst = searchResultsLstVw.getSelectionModel().getSelectedItems();
+		if(!fileLst.isEmpty()){
+			Clipboard clipBoard = Clipboard.getSystemClipboard();
+			ClipboardContent clipboardContent = new ClipboardContent();
+			clipboardContent.putFilesByPath(fileLst);
+			clipBoard.setContent(clipboardContent);
+		}
+	}
 
 	/**
 	 * On btn click.
 	 *
-	 * @param event the event
+	 * @param keyEvent the key event
 	 */
-	public void onSearchBtnClick(ActionEvent event)
+	public void onSearch(Event keyEvent)
 	{
 		final File startDirectory = new File(directoryTF.getText().trim());
 		final String searchTxt = searchTF.getText().trim();
 
 		final ObservableList<String> observableResultList = FXCollections.observableArrayList();
 		searchResultsLstVw.setItems(observableResultList);
-		searchBtn.setDisable(true);
 		stopBtn.setDisable(false);
 		pauseBtn.setDisable(false);
 		searchResultsLstVw.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
@@ -143,7 +200,6 @@ public class MasterSceneController
 			@Override
 			public void handle(WorkerStateEvent event) {
 				searchStatusLbl.textProperty().unbind();
-				searchBtn.setDisable(false);
 				stopBtn.setDisable(true);
 				pauseBtn.setDisable(true);
 			}

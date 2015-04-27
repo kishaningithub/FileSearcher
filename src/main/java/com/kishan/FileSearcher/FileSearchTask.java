@@ -14,8 +14,6 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
@@ -41,10 +39,10 @@ public class FileSearchTask extends Task<Void>
 
 	/** The es. */
 	private final ExecutorService es = Executors.newFixedThreadPool(5);
-	
+
 	private final List<FutureHolderDTO> futureHolderDTOLst = new ArrayList<FutureHolderDTO>();
-	
-	private final Pattern searchPattern;
+
+	private final IPatternSearcher iPatternSearcher;
 
 	/**
 	 * Instantiates a new file search task.
@@ -58,9 +56,9 @@ public class FileSearchTask extends Task<Void>
 		this.searchInputDTO = searchInputDTO;
 		this.observableResultList = observableResultList;
 		if(searchInputDTO.isRegEx()){
-			searchPattern = Pattern.compile(searchInputDTO.getSearchTxt());
+			iPatternSearcher = new RegExPatternSearcher(searchInputDTO.getSearchTxt());
 		}else{
-			searchPattern = Pattern.compile(Pattern.quote(searchInputDTO.getSearchTxt()), Pattern.CASE_INSENSITIVE);
+			iPatternSearcher = new StringPatternSearcher(searchInputDTO.getSearchTxt());
 		}
 	}
 
@@ -99,8 +97,8 @@ public class FileSearchTask extends Task<Void>
 	 */
 	private boolean isSearchStrPresent(String str)
 	{
-		Matcher matcher = searchPattern.matcher(str);
-		boolean isFound = matcher.find();
+		boolean isFound = false;
+		isFound = iPatternSearcher.isPatternPresent(str);
 		return isFound;
 	}
 

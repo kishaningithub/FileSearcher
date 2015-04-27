@@ -3,6 +3,7 @@ package com.kishan.FileSearcher.ux.desktop;
 import java.awt.Desktop;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.List;
 
 import javafx.collections.FXCollections;
@@ -173,45 +174,44 @@ public class MasterSceneController
 	 */
 	public void onSearch(Event keyEvent)
 	{
-		final File startDirectory = new File(directoryTF.getText().trim());
-		final String searchTxt = searchTF.getText().trim();
-
 		final ObservableList<String> observableResultList = FXCollections.observableArrayList();
 		searchResultsLstVw.setItems(observableResultList);
 		stopBtn.setDisable(false);
 		pauseBtn.setDisable(false);
-		searchResultsLstVw.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
-		service = new Service<Void>() {
-			@Override
-			protected Task<Void> createTask() {
-				SearchInputDTO searchInputDTO = new SearchInputDTO();
-				searchInputDTO.setStartDirectory(startDirectory.toPath());
-				searchInputDTO.setSearchTxt(searchTxt);
-				String maxFileSize = maxFileSizeTxt.getText().trim();
-				searchInputDTO.setAnySize(maxFileSize.isEmpty());
-				if(!searchInputDTO.isAnySize()){
-					searchInputDTO.setMaxFileSizeInBytes(Long.parseLong(maxFileSize), DataSizeUnit.valueOf(dataUnitCbo.getValue()));
+		if(service == null){
+			searchResultsLstVw.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+			service = new Service<Void>() {
+				@Override
+				protected Task<Void> createTask() {
+					SearchInputDTO searchInputDTO = new SearchInputDTO();
+					searchInputDTO.setStartDirectory(Paths.get(directoryTF.getText().trim()));
+					searchInputDTO.setSearchTxt(searchTF.getText().trim());
+					String maxFileSize = maxFileSizeTxt.getText().trim();
+					searchInputDTO.setAnySize(maxFileSize.isEmpty());
+					if(!searchInputDTO.isAnySize()){
+						searchInputDTO.setMaxFileSizeInBytes(Long.parseLong(maxFileSize), DataSizeUnit.valueOf(dataUnitCbo.getValue()));
+					}
+					searchInputDTO.setRegEx(isRegExChkBox.selectedProperty().get());
+					return new FileSearchTask(searchInputDTO, observableResultList);
 				}
-				searchInputDTO.setRegEx(isRegExChkBox.selectedProperty().get());
-				return new FileSearchTask(searchInputDTO, observableResultList);
-			}
-		};
-		service.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
-			@Override
-			public void handle(WorkerStateEvent event) {
-				searchStatusLbl.textProperty().unbind();
-				stopBtn.setDisable(true);
-				pauseBtn.setDisable(true);
-			}
-		});
-		service.setOnFailed(new EventHandler<WorkerStateEvent>() {
-			@Override
-			public void handle(WorkerStateEvent event) {
-				System.out.print(event);
-			}
-		});
-		
-		searchStatusLbl.textProperty().bind(service.messageProperty());
+			};
+			service.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
+				@Override
+				public void handle(WorkerStateEvent event) {
+					searchStatusLbl.textProperty().unbind();
+					stopBtn.setDisable(true);
+					pauseBtn.setDisable(true);
+				}
+			});
+			service.setOnFailed(new EventHandler<WorkerStateEvent>() {
+				@Override
+				public void handle(WorkerStateEvent event) {
+					System.out.print(event);
+				}
+			});
+			searchStatusLbl.textProperty().bind(service.messageProperty());
+		}
 		service.restart();
 	}
+	
 }

@@ -3,6 +3,7 @@ package com.kishan.FileSearcher;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.channels.ClosedByInterruptException;
 import java.nio.channels.FileChannel;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
@@ -57,17 +58,25 @@ public class FileSearchTask extends Task<Void>
 	@Override
 	protected Void call() throws Exception 
 	{
-		long fromTime = System.currentTimeMillis();
-		if(!searchInputDTO.getStartDirectory().toFile().exists()){
-			updateMessage("Invalid directory.");
-			return null;
+		try{
+			long fromTime = System.currentTimeMillis();
+			if(!searchInputDTO.getStartDirectory().toFile().exists()){
+				updateMessage("Invalid directory.");
+				return null;
+			}
+			if(!searchInputDTO.getSearchTxt().isEmpty()){
+				Files.walkFileTree(searchInputDTO.getStartDirectory(), new FileSearchFileVisitor());
+			}
+			long toTime = System.currentTimeMillis();
+			double timeTakenInSecs = (toTime - fromTime) / 1000d;
+			updateMessage("Search completed. Time taken " + timeTakenInSecs + " seconds.");
+		}catch(ClosedByInterruptException e){
+			if(!isCancelled()){
+				e.printStackTrace();
+			}
+		}catch(Exception e){
+			e.printStackTrace();
 		}
-		if(!searchInputDTO.getSearchTxt().isEmpty()){
-			Files.walkFileTree(searchInputDTO.getStartDirectory(), new FileSearchFileVisitor());
-		}
-		long toTime = System.currentTimeMillis();
-		double timeTakenInSecs = (toTime - fromTime) / 1000d;
-		updateMessage("Search completed. Time taken " + timeTakenInSecs + " seconds.");
 		return null;
 	}
 
@@ -97,7 +106,11 @@ public class FileSearchTask extends Task<Void>
 			if(isSearchStrPresent(fileContent)){
 				updateUI(path);
 			}
-		} catch (IOException e) {
+		}catch(ClosedByInterruptException e){
+			if(!isCancelled()){
+				e.printStackTrace();
+			}
+		}catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
@@ -155,7 +168,11 @@ public class FileSearchTask extends Task<Void>
 				// Check and handle 'cut' lines - End
 				bytebuf.clear();
 			}
-		} catch (IOException e) {
+		} catch(ClosedByInterruptException e){
+			if(!isCancelled()){
+				e.printStackTrace();
+			}
+		}catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
@@ -171,6 +188,9 @@ public class FileSearchTask extends Task<Void>
 		@Override
 		public FileVisitResult visitFile(final Path path, final BasicFileAttributes attrs) throws IOException 
 		{
+			if(isCancelled()){
+				return FileVisitResult.TERMINATE;
+			}
 			long fileSize = attrs.size();
 			if(searchInputDTO.isAnySize() || fileSize <= searchInputDTO.getMaxFileSizeInBytes()){
 				updateMessage("Searching file " + path.toString());

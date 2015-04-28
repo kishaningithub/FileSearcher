@@ -13,7 +13,7 @@
          <children>
             <HBox spacing="5.0">
                <children>
-                  <TextField fx:id="searchTF" onKeyTyped="#onSearch" promptText="Type To Search" HBox.hgrow="ALWAYS">
+                  <TextField fx:id="searchTF" onAction="#onSearch" promptText="Type To Search" HBox.hgrow="ALWAYS">
                      <VBox.margin>
                         <Insets />
                      </VBox.margin>
@@ -86,7 +86,8 @@
             <ContextMenu>
               <items>
                   <MenuItem mnemonicParsing="false" onAction="#onOpenPath" text="Open File(s)" />
-                <MenuItem mnemonicParsing="false" onAction="#onCopyFileList" text="Copy File Path(s)" />
+                <MenuItem mnemonicParsing="false" onAction="#onCopyFiles" text="Copy File(s)" />
+                  <MenuItem mnemonicParsing="false" onAction="#onCopyFilePath" text="Copy File Path(s)" />
               </items>
             </ContextMenu>
          </contextMenu></ListView>

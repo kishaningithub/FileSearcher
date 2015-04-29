@@ -3,13 +3,17 @@ package com.kishan.FileSearcher;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.channels.Channel;
 import java.nio.channels.ClosedByInterruptException;
-import java.nio.channels.FileChannel;
+import java.nio.channels.SeekableByteChannel;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
+import java.nio.file.OpenOption;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
+import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.EnumSet;
 
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
@@ -138,8 +142,7 @@ public class FileSearchTask extends Task<Void>
 	private void searchLargeFile(final Path path)
 	{
 		int bufferSize = 10 * 1024 * 1024;
-		try (FileInputStream fs = new FileInputStream(path.toFile());
-				FileChannel in = fs.getChannel()){
+		try (SeekableByteChannel in = Files.newByteChannel(path, StandardOpenOption.READ)){
 			byte[] byteArr = new byte[bufferSize];
 			ByteBuffer bytebuf = ByteBuffer.wrap(byteArr);
 			int bytesCount = 0;
@@ -153,7 +156,7 @@ public class FileSearchTask extends Task<Void>
 				// Check and handle 'cut' lines - Start
 				int i = pageStr.length() - 1;
 				int newLinePos = i; 
-				for(; i >= 0; i--){
+				while(i-- >= 0){
 					char c = pageStr.charAt(i);
 					if(c == '\r' || c == '\n' ){
 						newLinePos = i;

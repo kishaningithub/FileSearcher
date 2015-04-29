@@ -7,7 +7,7 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.layout.AnchorPane?>
 
-<VBox prefHeight="519.0" prefWidth="498.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.kishan.FileSearcher.ux.desktop.MasterSceneController">
+<VBox prefWidth="498.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.kishan.FileSearcher.ux.desktop.MasterSceneController">
    <children>
       <VBox alignment="CENTER" spacing="5.0">
          <children>
@@ -40,7 +40,7 @@
             </HBox>
             <Accordion>
               <panes>
-                <TitledPane animated="false" text="Advanced">
+                <TitledPane text="Advanced">
                      <content>
                         <VBox spacing="5.0">
                            <children>
@@ -61,9 +61,9 @@
                 </TitledPane>
               </panes>
             </Accordion>
-            <HBox alignment="CENTER">
+            <HBox alignment="CENTER_LEFT">
                <children>
-                  <Label fx:id="searchStatusLbl" alignment="CENTER" textAlignment="CENTER" HBox.hgrow="ALWAYS">
+                  <Label fx:id="searchStatusLbl" alignment="CENTER" HBox.hgrow="ALWAYS">
                      <tooltip>
                         <Tooltip text="Empty Tooltip" />
                      </tooltip>
@@ -72,8 +72,7 @@
             </HBox>
             <HBox alignment="CENTER" spacing="5.0">
                <children>
-                  <Button fx:id="stopBtn" disable="true" mnemonicParsing="false" text="Stop" />
-                  <ToggleButton fx:id="pauseBtn" disable="true" mnemonicParsing="false" text="Pause" />
+                  <Button fx:id="stopBtn" disable="true" mnemonicParsing="false" onAction="#onStopSearch" text="Stop" />
                </children>
             </HBox>
          </children>

@@ -32,8 +32,20 @@ public class FileSearchTask extends Task<Void>
 	/** The threshold size. */
 	private final long thresholdSize = DataSizeUnit.MB.toBytes(10);
 
+	/** The i pattern searcher. */
 	private final IPatternSearcher iPatternSearcher;
-
+	
+	/** The no of files searched. */
+	private long noOfFilesSearched = 0;
+	
+	// Message Formats - Start
+	/** The msg format search completed. */
+	private final String msgFormatSearchCompleted = "Done. %s files searched (%s seconds).";
+	
+	/** The msg format progress msg. */
+	private final String msgFormatProgressMsg = "%s files searched. Searching %s";
+    // Message Formats - End
+	
 	/**
 	 * Instantiates a new file search task.
 	 *
@@ -55,6 +67,12 @@ public class FileSearchTask extends Task<Void>
 	/* (non-Javadoc)
 	 * @see javafx.concurrent.Task#call()
 	 */
+	/**
+	 * Call.
+	 *
+	 * @return the void
+	 * @throws Exception the exception
+	 */
 	@Override
 	protected Void call() throws Exception 
 	{
@@ -69,7 +87,7 @@ public class FileSearchTask extends Task<Void>
 			}
 			long toTime = System.currentTimeMillis();
 			double timeTakenInSecs = (toTime - fromTime) / 1000d;
-			updateMessage("Search completed. Time taken " + timeTakenInSecs + " seconds.");
+			updateMessage(String.format(msgFormatSearchCompleted, noOfFilesSearched, timeTakenInSecs));
 		}catch(ClosedByInterruptException e){
 			if(!isCancelled()){
 				e.printStackTrace();
@@ -101,7 +119,6 @@ public class FileSearchTask extends Task<Void>
 	private void searchSmallFile(final Path path)
 	{
 		try {
-			updateMessage("Searching "+ path);
 			String fileContent = new String(Files.readAllBytes(path));
 			if(isSearchStrPresent(fileContent)){
 				updateUI(path);
@@ -192,12 +209,13 @@ public class FileSearchTask extends Task<Void>
 			}
 			long fileSize = attrs.size();
 			if(searchInputDTO.isAnySize() || fileSize <= searchInputDTO.getMaxFileSizeInBytes()){
-				updateMessage("Searching file " + path.toString());
+				updateMessage(String.format(msgFormatProgressMsg, noOfFilesSearched, path));
 				if(fileSize <= thresholdSize){
 					searchSmallFile(path);
 				}else{
 					searchLargeFile(path);
 				}
+				noOfFilesSearched++;
 			}
 			return super.visitFile(path, attrs);
 		}

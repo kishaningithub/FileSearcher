@@ -22,7 +22,6 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TextField;
-import javafx.scene.control.ToggleButton;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
 import javafx.stage.DirectoryChooser;
@@ -57,10 +56,6 @@ public class MasterSceneController
 	/** The stop btn. */
 	@FXML
 	private Button stopBtn;
-	
-	/** The pause btn. */
-	@FXML
-	private ToggleButton pauseBtn;
 	
 	/** The is reg ex chk box. */
 	@FXML
@@ -174,10 +169,11 @@ public class MasterSceneController
 	 */
 	public void onSearch(Event keyEvent)
 	{
+		searchResultsLstVw.managedProperty().bind(searchResultsLstVw.visibleProperty());
+		searchResultsLstVw.setVisible(true);
 		final ObservableList<String> observableResultList = FXCollections.observableArrayList();
 		searchResultsLstVw.setItems(observableResultList);
 		stopBtn.setDisable(false);
-		pauseBtn.setDisable(false);
 		if(service == null){
 			searchResultsLstVw.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
 			service = new Service<Void>() {
@@ -200,18 +196,24 @@ public class MasterSceneController
 				public void handle(WorkerStateEvent event) {
 					searchStatusLbl.textProperty().unbind();
 					stopBtn.setDisable(true);
-					pauseBtn.setDisable(true);
 				}
 			});
-			service.setOnFailed(new EventHandler<WorkerStateEvent>() {
-				@Override
-				public void handle(WorkerStateEvent event) {
-					System.out.print(event);
-				}
-			});
-			searchStatusLbl.textProperty().bind(service.messageProperty());
 		}
+		searchStatusLbl.textProperty().unbind();
+		searchStatusLbl.textProperty().bind(service.messageProperty());
 		service.restart();
+	}
+	
+	/**
+	 * On stop search.
+	 *
+	 * @param event the event
+	 */
+	public void onStopSearch(ActionEvent event)
+	{
+		if(service != null){
+			service.cancel();
+		}
 	}
 	
 }

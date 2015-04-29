@@ -152,7 +152,7 @@ public class FileSearchTask extends Task<Void>
 				// Check and handle 'cut' lines - Start
 				int i = pageStr.length() - 1;
 				int newLinePos = i; 
-				while(i-- >= 0){
+				for(;i >= 0; i--){
 					char c = pageStr.charAt(i);
 					if(c == '\r' || c == '\n' ){
 						newLinePos = i;
